@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Painel administrativo</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body class="min-h-screen bg-paper font-sans text-ink">
+  <div id="login" class="hidden mx-auto mt-24 max-w-sm px-4">
+    <form id="loginForm" class="card space-y-4">
+      <h1 class="font-display text-2xl">Entrar no painel</h1>
+      <div><label class="label" for="lemail">E-mail</label><input id="lemail" type="email" class="field" autocomplete="username" required></div>
+      <div><label class="label" for="lpass">Senha</label><input id="lpass" type="password" class="field" autocomplete="current-password" required></div>
+      <p id="lerr" role="alert" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800"></p>
+      <button class="btn w-full">Entrar</button>
+    </form>
+  </div>
+
+  <div id="app" class="hidden">
+    <header class="border-b border-line bg-white">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-3">
+        <span class="mr-4 font-display text-lg">Painel</span>
+        <nav id="nav" class="flex flex-wrap gap-2"></nav>
+        <button id="logout" class="btn-ghost ml-auto">Sair</button>
+      </div>
+    </header>
+    <main id="view" class="mx-auto max-w-6xl px-4 py-8"></main>
+  </div>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

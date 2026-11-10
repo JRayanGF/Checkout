@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pagamento seguro</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body class="min-h-screen bg-paper font-sans text-ink">
+  <header class="border-b border-line bg-white">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+      <span class="font-display text-lg">Pagamento</span>
+      <span class="text-sm text-slate-600">Ambiente seguro</span>
+    </div>
+  </header>
+
+  <main class="mx-auto grid max-w-5xl gap-8 px-4 py-8 lg:grid-cols-[1fr_380px]">
+    <div id="loading" class="lg:col-span-2 text-slate-600">Carregando…</div>
+
+    <div id="content" class="hidden contents">
+      <section class="order-2 space-y-6 lg:order-1">
+        <div class="card">
+          <h2 class="font-display text-xl">Seus dados</h2>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div class="sm:col-span-2"><label class="label" for="name">Nome completo</label><input id="name" class="field" autocomplete="name"></div>
+            <div><label class="label" for="doc">CPF ou CNPJ</label><input id="doc" class="field" inputmode="numeric" placeholder="000.000.000-00"></div>
+            <div><label class="label" for="phone">Telefone</label><input id="phone" class="field" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000"></div>
+            <div class="sm:col-span-2"><label class="label" for="email">E-mail</label><input id="email" type="email" class="field" autocomplete="email"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="font-display text-xl">Forma de pagamento</h2>
+          <div class="mt-4 grid grid-cols-3 gap-3" role="group" aria-label="Forma de pagamento">
+            <button type="button" class="tab" data-method="pix" aria-pressed="true">Pix</button>
+            <button type="button" class="tab" data-method="card" aria-pressed="false">Cartão</button>
+            <button type="button" class="tab" data-method="boleto" aria-pressed="false">Boleto</button>
+          </div>
+
+          <div id="panel-pix" class="mt-5 text-sm text-slate-600">Você recebe um QR Code e o código copia e cola. A confirmação é automática, em segundos.</div>
+          <div id="panel-card" class="mt-5 hidden"><div id="cardBrick"></div></div>
+          <div id="panel-boleto" class="mt-5 hidden">
+            <p class="mb-4 text-sm text-slate-600">O boleto exige o endereço completo. A compensação pode levar até 3 dias úteis.</p>
+            <div class="grid gap-4 sm:grid-cols-6">
+              <div class="sm:col-span-2"><label class="label" for="cep">CEP</label><input id="cep" class="field" inputmode="numeric"></div>
+              <div class="sm:col-span-4"><label class="label" for="street">Rua</label><input id="street" class="field"></div>
+              <div class="sm:col-span-2"><label class="label" for="number">Número</label><input id="number" class="field"></div>
+              <div class="sm:col-span-4"><label class="label" for="district">Bairro</label><input id="district" class="field"></div>
+              <div class="sm:col-span-4"><label class="label" for="city">Cidade</label><input id="city" class="field"></div>
+              <div class="sm:col-span-2"><label class="label" for="uf">UF</label><input id="uf" class="field" maxlength="2"></div>
+            </div>
+          </div>
+
+          <label class="mt-6 flex items-start gap-3 text-sm">
+            <input id="consent" type="checkbox" class="mt-1 h-4 w-4 rounded border-line text-moss focus:ring-moss">
+            <span>Li e aceito a <a href="/privacidade.html" target="_blank" rel="noopener" class="underline">Política de Privacidade</a> e autorizo o uso dos meus dados para processar este pedido.</span>
+          </label>
+
+          <p id="error" role="alert" class="mt-4 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800"></p>
+          <button id="pay" type="button" class="btn mt-5 w-full">Pagar</button>
+        </div>
+
+        <div id="pixResult" class="card hidden text-center">
+          <h2 class="font-display text-xl">Pague com Pix</h2>
+          <p class="mt-1 text-sm text-slate-600">Abra o app do seu banco e escaneie o QR Code ou use o código abaixo.</p>
+          <img id="pixQr" alt="QR Code do Pix" class="mx-auto mt-4 h-56 w-56">
+          <textarea id="pixCode" readonly rows="3" class="field mt-4 text-xs"></textarea>
+          <button id="copyPix" type="button" class="btn-ghost mt-3">Copiar código</button>
+          <p class="mt-4 text-sm text-slate-600">Aguardando confirmação… esta página atualiza sozinha.</p>
+        </div>
+      </section>
+
+      <aside class="order-1 lg:order-2 lg:sticky lg:top-6 lg:self-start">
+        <div class="card space-y-5">
+          <div id="productImg"></div>
+          <div>
+            <h1 id="pName" class="font-display text-2xl"></h1>
+            <p id="pDesc" class="mt-1 text-sm text-slate-600"></p>
+          </div>
+          <div class="flex items-baseline gap-3">
+            <span id="pPrice" class="font-display text-2xl"></span>
+            <s id="pOriginal" class="text-sm text-slate-500"></s>
+          </div>
+          <div>
+            <label class="label" for="qty">Quantidade</label>
+            <input id="qty" type="number" min="1" max="99" value="1" class="field w-24">
+          </div>
+          <div>
+            <label class="label" for="coupon">Cupom de desconto</label>
+            <div class="flex gap-2"><input id="coupon" class="field uppercase" autocomplete="off"><button id="applyCoupon" type="button" class="btn-ghost">Aplicar</button></div>
+            <p id="couponMsg" class="mt-1 text-sm"></p>
+          </div>
+          <dl class="space-y-2 border-t border-line pt-4 text-sm">
+            <div class="flex justify-between"><dt>Subtotal</dt><dd id="sSub"></dd></div>
+            <div class="flex justify-between text-moss-dark"><dt>Desconto</dt><dd id="sDisc"></dd></div>
+            <div class="flex justify-between border-t border-line pt-3 text-base font-semibold"><dt>Total</dt><dd id="sTotal" class="font-display text-xl"></dd></div>
+          </dl>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/checkout.js"></script>
+</body>
+</html>
