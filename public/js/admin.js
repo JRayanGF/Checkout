@@ -1,6 +1,6 @@
 const TABS = [['dashboard', 'Vendas'], ['orders', 'Pedidos'], ['products', 'Produtos'], ['coupons', 'Cupons'], ['customers', 'Clientes'], ['logs', 'Logs']];
 const STATUS = { pending: 'Pendente', approved: 'Aprovado', rejected: 'Recusado', cancelled: 'Cancelado', refunded: 'Estornado' };
-const METHOD = { pix: 'Pix', card: 'Cartão', boleto: 'Boleto' };
+const METHOD = { pix: 'Pix' };
 const BADGE = { approved: 'bg-moss-soft text-moss-dark', pending: 'bg-amber-100 text-amber-800', rejected: 'bg-red-100 text-red-800', cancelled: 'bg-slate-200 text-slate-700', refunded: 'bg-slate-200 text-slate-700' };
 const badge = (s) => `<span class="rounded-full px-2 py-0.5 text-xs font-medium ${BADGE[s] || ''}">${esc(STATUS[s] || s)}</span>`;
 const fmtDate = (d) => new Date(d).toLocaleString('pt-BR');
@@ -82,13 +82,24 @@ async function orders() {
   document.querySelectorAll('[data-order]').forEach((b) => b.addEventListener('click', () => guarded(() => orderDetail(b.dataset.order))));
 }
 
+const ORDER_ACTIONS = {
+  pending: [['approved', 'Confirmar pagamento recebido'], ['cancelled', 'Cancelar pedido']],
+  approved: [['refunded', 'Marcar como estornado']],
+};
+
 async function orderDetail(id) {
   const d = await api('/admin/orders/' + id);
   $('#detail').innerHTML = `<h2 class="mb-3 font-display text-xl">Pedido ${esc(d.order.public_id)}</h2>
-    <h3 class="mb-2 mt-4 font-medium">Pagamentos</h3>
-    ${table(['ID Mercado Pago', 'Forma', 'Status', 'Detalhe', 'Parcelas', 'Data'], d.payments.map((p) => [esc(p.mp_payment_id), esc(METHOD[p.method] || p.method), esc(p.status), esc(p.status_detail || ''), esc(p.installments || ''), fmtDate(p.created_at)]))}
+    <p class="mb-3 text-sm">Status: ${badge(d.order.status)} · Total: ${brl(d.order.total_cents)}</p>
+    <div class="mb-2 flex flex-wrap gap-2">${(ORDER_ACTIONS[d.order.status] || []).map(([st, label]) => `<button class="btn-ghost" data-set="${st}">${label}</button>`).join('')}</div>
     <h3 class="mb-2 mt-4 font-medium">Histórico</h3>
     ${table(['Data', 'Evento', 'Detalhe'], d.logs.map((l) => [fmtDate(l.created_at), esc(l.event), `<code class="text-xs">${esc(JSON.stringify(l.detail))}</code>`]))}`;
+  document.querySelectorAll('[data-set]').forEach((b) => b.addEventListener('click', () => guarded(async () => {
+    if (!confirm('Confirmar: ' + b.textContent + '?')) return;
+    await api('/admin/orders/' + id + '/status', { method: 'POST', body: { status: b.dataset.set } });
+    await render();
+    await orderDetail(id);
+  })));
   $('#detail').scrollIntoView({ behavior: 'smooth' });
 }
 

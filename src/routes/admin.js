@@ -5,7 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { config } from '../config.js';
 import { query } from '../db.js';
-import { httpError } from '../services/orders.js';
+import { httpError, setOrderStatus } from '../services/orders.js';
 import { maskDocument } from '../utils/cpfCnpj.js';
 
 export const adminRouter = Router();
@@ -109,9 +109,15 @@ adminRouter.get('/orders/:id', async (req, res) => {
   const id = z.coerce.number().int().parse(req.params.id);
   const order = (await query(`${orderSelect} WHERE o.id=$1`, [id])).rows[0];
   if (!order) throw httpError(404, 'Pedido não encontrado');
-  const payments = (await query('SELECT mp_payment_id, method, status, status_detail, installments, created_at FROM payments WHERE order_id=$1 ORDER BY id', [id])).rows;
   const logs = (await query('SELECT event, detail, created_at FROM transaction_logs WHERE order_id=$1 ORDER BY id', [id])).rows;
-  res.json({ order, payments, logs });
+  res.json({ order, logs });
+});
+
+adminRouter.post('/orders/:id/status', async (req, res) => {
+  const id = z.coerce.number().int().parse(req.params.id);
+  const { status } = z.object({ status: z.enum(['approved', 'cancelled', 'refunded']) }).parse(req.body);
+  await setOrderStatus(id, status, req.admin.email);
+  res.json({ ok: true });
 });
 
 adminRouter.get('/logs', async (_req, res) => {

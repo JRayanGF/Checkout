@@ -1,5 +1,5 @@
 {
-  "name": "checkout-mercadopago",
+  "name": "checkout-pix",
   "version": "1.0.0",
   "private": true,
   "type": "module",

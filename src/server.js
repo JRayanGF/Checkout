@@ -8,24 +8,21 @@ import { ZodError } from 'zod';
 import { config } from './config.js';
 import { pool } from './db.js';
 import { publicRouter } from './routes/public.js';
-import { webhookRouter } from './routes/webhook.js';
 import { adminRouter } from './routes/admin.js';
 
 const app = express();
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
-const mp = ['https://*.mercadopago.com', 'https://*.mercadopago.com.br', 'https://*.mercadolibre.com', 'https://*.mlstatic.com'];
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", 'https://sdk.mercadopago.com', ...mp],
-      styleSrc: ["'self'", "'unsafe-inline'", ...mp],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:', 'https:'],
-      frameSrc: mp,
-      connectSrc: ["'self'", ...mp],
-      fontSrc: ["'self'", 'data:', ...mp],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", 'data:'],
       objectSrc: ["'none'"],
       frameAncestors: ["'none'"],
     },
@@ -35,7 +32,6 @@ app.use(cookieParser());
 app.use(express.json({ limit: '100kb' }));
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, limit: 600, standardHeaders: true, legacyHeaders: false }));
 
-app.use('/api/webhooks', webhookRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api', publicRouter);
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Rota não encontrada' }));

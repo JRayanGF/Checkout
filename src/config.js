@@ -11,9 +11,8 @@ export const config = {
   port: Number(process.env.PORT || 3000),
   appUrl: required('APP_URL').replace(/\/$/, ''),
   jwtSecret: required('JWT_SECRET'),
-  mpAccessToken: required('MP_ACCESS_TOKEN'),
-  mpPublicKey: required('MP_PUBLIC_KEY'),
-  mpWebhookSecret: required('MP_WEBHOOK_SECRET'),
+  pixKey: required('PIX_KEY'),
+  pixName: process.env.PIX_NAME || '',
   smtp: {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),
